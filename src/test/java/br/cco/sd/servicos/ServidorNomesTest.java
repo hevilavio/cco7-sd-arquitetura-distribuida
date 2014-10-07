@@ -11,9 +11,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import br.cco.sd.modelo.Servico;
+
 public class ServidorNomesTest {
 	private Thread sNomesThread;
 	private ServidorNomes sNomes;
+	private final String servicoTeste = "0_junit_127.0.0.1_9999";
 	
 	@Before
 	public void init(){
@@ -35,8 +38,8 @@ public class ServidorNomesTest {
 	@Test
 	public void servidorDeNomesPodeCadastrarServico() {
 		try {
-			Socket s = new Socket("127.0.0.1", 8888);
-			String resposta = OperadorServidorNomes.cadastrarServico(s, "0_junit_127.0.0.1_9999");
+			Socket socket = new Socket("127.0.0.1", 8888);
+			String resposta = OperadorServidorNomes.cadastrarServico(socket, servicoTeste);
 			
 			assertEquals("OK", resposta);
 			assertEquals(1, sNomes.getServicos().size());
@@ -49,24 +52,59 @@ public class ServidorNomesTest {
 	@Test
 	public void servidorDeNomesPodeRecuperarServico(){
 		try {
-			Socket s = new Socket("127.0.0.1", 8888);
-			DataOutputStream output = new DataOutputStream(s.getOutputStream());
-			DataInputStream input= new DataInputStream(s.getInputStream());
+			// precisamos cadastrar um servico para tentar recuperá-lo
+			servidorDeNomesPodeCadastrarServico();
 			
-			output.writeUTF("0_junit_127.0.0.1_9999");
-			String resposta = input.readUTF();
+			Socket s = new Socket("127.0.0.1", 8888);
+			String nome = "junit";
+			Servico servico = OperadorServidorNomes.recuperarServico(s, nome);
 			s.close();
 			
-			assertEquals("OK", resposta);
-			assertEquals(1, sNomes.getServicos().size());
-		
+			assertEquals(true, servico != null);
+			assertEquals("127.0.0.1", servico.getIp());
+			assertEquals(9999, servico.getPorta());
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
+}
+
+class OperadorServidorNomes {
+	public static String cadastrarServico(Socket s, String nome) {
+		DataOutputStream output;
+		String resposta = null;
+		try {
+			output = new DataOutputStream(s.getOutputStream());
+			DataInputStream input = new DataInputStream(s.getInputStream());
+
+			output.writeUTF("0_junit_127.0.0.1_9999");
+			resposta = input.readUTF();
+			s.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return resposta;
+	}
 	
-	@Test
-	public void escolhaDoServicoObedeceRoundRobin(){
-		
+	public static Servico recuperarServico(Socket s, String nome) {
+		DataOutputStream output;
+		String resposta = null;
+		Servico servico = null;
+		try {
+			output = new DataOutputStream(s.getOutputStream());
+			DataInputStream input = new DataInputStream(s.getInputStream());
+
+			output.writeUTF("1_" + nome);
+			resposta = input.readUTF();
+			String[] ipEPorta = resposta.split("_");
+			servico = new Servico(nome, ipEPorta[0], Integer.parseInt(ipEPorta[1]));
+			
+			s.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return servico;
 	}
 }
+

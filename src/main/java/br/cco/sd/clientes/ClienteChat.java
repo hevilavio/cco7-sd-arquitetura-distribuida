@@ -1,10 +1,11 @@
-package br.cco.sd.modelo;
+package br.cco.sd.clientes;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+import br.cco.sd.modelo.Servico;
 import br.cco.sd.servicos.ServidorNomesConnector;
 
 public class ClienteChat implements Cliente {
@@ -23,7 +24,6 @@ public class ClienteChat implements Cliente {
 	public void preparar() {
 		try {
 			servicoChat = connector.requisitarServico("CHAT");
-			
 		} catch (IOException e) {
 			System.err.println("Erro ao buscar serviço.");
 			e.printStackTrace();

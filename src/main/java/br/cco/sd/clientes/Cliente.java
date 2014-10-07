@@ -1,4 +1,4 @@
-package br.cco.sd.modelo;
+package br.cco.sd.clientes;
 
 public interface Cliente {
 	

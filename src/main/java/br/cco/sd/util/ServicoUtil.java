@@ -22,8 +22,8 @@ public class ServicoUtil {
 	 * escolher um serviço que foi menos usado;
 	 * */
 	public Servico getServicoComMenorUso(List<Servico> servicos){
-		int menor = servicos.get(0).getQuantidadeUso();
-		Servico s = null;
+		Servico s = servicos.get(0);
+		int menor = s.getQuantidadeUso();
 		for (Servico servico : servicos) {
 			if(servico.getQuantidadeUso() < menor){
 				menor = servico.getQuantidadeUso();
