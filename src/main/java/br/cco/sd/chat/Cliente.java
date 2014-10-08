@@ -1,4 +1,4 @@
-package br.cco.sd.clientes;
+package br.cco.sd.chat;
 
 public interface Cliente {
 	

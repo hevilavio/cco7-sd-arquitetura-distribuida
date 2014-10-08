@@ -9,7 +9,7 @@ import java.util.List;
 import br.cco.sd.servicos.Servidor;
 import br.cco.sd.servicos.ServidorNomesConnector;
 
-public class ServidorChat extends Servidor implements Runnable {
+public class ServidorChat extends Servidor implements Runnable, Evento {
 	private List<Socket> clientes;
 
 	/**
@@ -37,8 +37,9 @@ public class ServidorChat extends Servidor implements Runnable {
 			while (loop) {
 				Socket socketCliente = server.accept();
 				adicionarCliente(socketCliente);
-
-				new Thread(new ClienteListener(this, socketCliente)).start();
+				
+				// Inicia uma thread para "escutar" as mensagens enviadas pelo cliente
+				new Thread(new RecepcaoMensagemRunnable(socketCliente, this)).start();
 			}
 
 		} catch (IOException e) {
@@ -47,13 +48,6 @@ public class ServidorChat extends Servidor implements Runnable {
 			fecharServerSocket(server);
 		}
 	}
-	
-	public void distribuirMensagem(String mensagem){
-		synchronized (clientes) {
-			new DistribuidorMensagens(clientes, mensagem).distribuir();
-		}
-	}
-	
 	
 	private void fecharServerSocket(ServerSocket server) {
 		try {
@@ -68,4 +62,13 @@ public class ServidorChat extends Servidor implements Runnable {
 			clientes.add(socketCliente);
 		}
 	}
+
+	@Override
+	public void quandoChegarMensagem(String mensagem) {
+		synchronized (clientes) {
+			for (Socket cliente : clientes) {
+				new EnviarMensagemEvento(cliente).quandoChegarMensagem(mensagem);
+			}
+		}
+	} 
 }
