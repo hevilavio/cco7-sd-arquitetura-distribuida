@@ -18,11 +18,17 @@ public class ServicoUtilTest {
 		
 		List<Servico> servicosSoma = util.agruparPorNome(servicos, "SOMA");
 		List<Servico> servicosMult = util.agruparPorNome(servicos, "MULT");
-		List<Servico> servicosX = util.agruparPorNome(servicos, "X");
 		
 		assertEquals(3, servicosSoma.size());
-		assertEquals(2, servicosMult.size());
-		assertEquals(0, servicosX.size());
+		assertEquals(2, servicosMult.size()); 
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void naoPodeAgruparPorServicoInexistente() {
+		List<Servico> servicos = GeradorServico.gerarServicosPorNome("SOMA", "SOMA", "SOMA", "MULT", "MULT");
+		ServicoUtil util = new ServicoUtil();
+
+		util.agruparPorNome(servicos, "X");
 	}
 
 	@Test

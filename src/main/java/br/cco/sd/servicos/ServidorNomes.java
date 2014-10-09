@@ -14,11 +14,18 @@ import br.cco.sd.modelo.Servico;
 import br.cco.sd.util.ServicoUtil;
 
 public class ServidorNomes implements Runnable{
+	
 	private List<Servico> servicos = new ArrayList<>();
 	private ServerSocket server;
-	private static final Logger LOGGER = Logger.getLogger("ServidorNomes");
+	private int porta;
+	
+	private final Logger LOGGER = Logger.getLogger("ServidorNomes");
     
-	// apenas para Testes
+	public ServidorNomes(int porta) {
+		this.porta = porta;
+	}
+	
+	// apenas para uso nos Testes
 	public List<Servico> getServicos(){
 		return servicos;
 	}
@@ -31,18 +38,21 @@ public class ServidorNomes implements Runnable{
 
 	@Override
 	public void run() {
-		LOGGER.info("Iniciando SN");
 		
 		try {
-			server = new ServerSocket(8888, 10);
+			server = new ServerSocket(porta, 10);
+			LOGGER.info("SN iniciado. IP=localhost|PORTA=" + porta);
+				
 			String recepcao;
 			String[] parametros;
-			
+
 			while(true){
 				Socket cliente = server.accept();
-				LOGGER.info("Cliente aceito");
-				DataOutputStream resposta = new DataOutputStream(cliente.getOutputStream());
 				
+				String ipRemoto = cliente.getRemoteSocketAddress().toString();
+				LOGGER.info("Cliente aceito. IP=" + ipRemoto);
+				
+				DataOutputStream resposta = new DataOutputStream(cliente.getOutputStream());
 				recepcao = new DataInputStream(cliente.getInputStream()).readUTF();
 				parametros = recepcao.split("_");
 
@@ -54,7 +64,7 @@ public class ServidorNomes implements Runnable{
 				 * Formato de entrada
 				 * 
 				 * cadastrar: 0_SOMA_192.168.1.10_8881
-				 * c: 1_SOMA
+				 * recuperar: 1_SOMA
 				 * */ 
 				if(acao.equals("0")){ 
 					ip = parametros[2];
@@ -66,6 +76,7 @@ public class ServidorNomes implements Runnable{
 					//TODO: atualizar SN secundário
 					//TODO: persistir no DB
 					resposta.writeUTF("OK");
+					LOGGER.info("Servico Cadastrado. Servico=" + servico.toString());
 
 				}else if(acao.equals("1")){ 
 					ServicoUtil util = new ServicoUtil();
@@ -79,6 +90,7 @@ public class ServidorNomes implements Runnable{
 					
 					// formato: 192.168.1.10_8881
 					resposta.writeUTF(String.format("%s_%s", ip, porta));
+					LOGGER.info("Servico Recuperado. Servico=" + melhorEscolha.toString());
 				}
 			}  
 		} catch (SocketException se) {

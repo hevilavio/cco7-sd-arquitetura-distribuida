@@ -11,27 +11,22 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import br.cco.sd.chat.SimuladorServidorDeNomes;
 import br.cco.sd.modelo.Servico;
 
 public class ServidorNomesTest {
-	private Thread sNomesThread;
-	private ServidorNomes sNomes;
+	private SimuladorServidorDeNomes simuladorSn;
 	private final String servicoTeste = "0_junit_127.0.0.1_9999";
 	
 	@Before
 	public void init(){
-		sNomes = new ServidorNomes();
-		sNomesThread = new Thread(sNomes);
-		sNomesThread.start();
+		simuladorSn = new SimuladorServidorDeNomes();
+		simuladorSn.iniciar(8888);
 	}
 	
 	@After
 	public void goAway(){
-		try {
-			sNomes.parar();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		simuladorSn.finalizar();
 	}
   
 	
@@ -42,7 +37,7 @@ public class ServidorNomesTest {
 			String resposta = OperadorServidorNomes.cadastrarServico(socket, servicoTeste);
 			
 			assertEquals("OK", resposta);
-			assertEquals(1, sNomes.getServicos().size());
+			assertEquals(1, simuladorSn.getServicos().size());
 		
 		} catch (IOException e) {
 			e.printStackTrace();

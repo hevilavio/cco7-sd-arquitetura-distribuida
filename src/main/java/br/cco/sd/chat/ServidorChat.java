@@ -1,16 +1,20 @@
 package br.cco.sd.chat;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
+import br.cco.sd.modelo.Entrada;
 import br.cco.sd.servicos.Servidor;
 import br.cco.sd.servicos.ServidorNomesConnector;
 
 public class ServidorChat extends Servidor implements Runnable, Evento {
 	private List<Socket> clientes;
+	private final Logger LOGGER = Logger.getLogger("ServidorChat");
 
 	/**
 	 * 
@@ -34,12 +38,18 @@ public class ServidorChat extends Servidor implements Runnable, Evento {
 
 		try {
 			server = new ServerSocket(porta, 10);
+			LOGGER.info("SChat iniciado. IP=localhost|PORTA=" + porta);
+			
 			while (loop) {
 				Socket socketCliente = server.accept();
-				adicionarCliente(socketCliente);
+				LOGGER.info("Novo Cliente aceito.");
 				
-				// Inicia uma thread para "escutar" as mensagens enviadas pelo cliente
-				new Thread(new RecepcaoMensagemRunnable(socketCliente, this)).start();
+				adicionarCliente(socketCliente);
+
+				// Inicia uma thread para "escutar" as mensagens enviadas pelocliente
+				new Thread(new DistribuidorRunnable(
+						new Entrada(new DataInputStream(socketCliente.getInputStream())),
+						this)).start();
 			}
 
 		} catch (IOException e) {
@@ -48,7 +58,7 @@ public class ServidorChat extends Servidor implements Runnable, Evento {
 			fecharServerSocket(server);
 		}
 	}
-	
+
 	private void fecharServerSocket(ServerSocket server) {
 		try {
 			server.close();
@@ -67,8 +77,9 @@ public class ServidorChat extends Servidor implements Runnable, Evento {
 	public void quandoChegarMensagem(String mensagem) {
 		synchronized (clientes) {
 			for (Socket cliente : clientes) {
-				new EnviarMensagemEvento(cliente).quandoChegarMensagem(mensagem);
+				new EnviarMensagemEvento(cliente)
+						.quandoChegarMensagem(mensagem);
 			}
 		}
-	} 
+	}
 }

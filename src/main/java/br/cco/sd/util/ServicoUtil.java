@@ -14,6 +14,10 @@ public class ServicoUtil {
 				agrupamento.add(servico);
 			}
 		}
+		
+		if(agrupamento.size() == 0){
+			throw new IllegalArgumentException("Servico nao encontrado. Servico=" + nome);
+		}
 		return agrupamento;
 	}
 	

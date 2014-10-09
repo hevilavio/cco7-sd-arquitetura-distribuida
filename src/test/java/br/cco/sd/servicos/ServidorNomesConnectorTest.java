@@ -1,6 +1,6 @@
 package br.cco.sd.servicos;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
@@ -19,7 +19,7 @@ public class ServidorNomesConnectorTest {
 	
 	@Before
 	public void init(){
-		sNomes = new ServidorNomes();
+		sNomes = new ServidorNomes(8888);
 		sNomesThread = new Thread(sNomes);
 		sNomesThread.start();
 		
